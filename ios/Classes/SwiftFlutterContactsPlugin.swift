@@ -600,8 +600,10 @@ public class SwiftFlutterContactsPlugin: NSObject, FlutterPlugin, FlutterStreamH
                 )
                 if !contacts.isEmpty {
                     let contactView = CNContactViewController(for: contacts.first!)
+                    let systemBundle = Bundle(for: UIButton.self)
+                    let backText = systemBundle.localizedString(forKey: "Back", value: nil, table: nil)
                     contactView.navigationItem.backBarButtonItem = UIBarButtonItem(
-                        title: "Back",
+                        title: backText,
                         style: .plain,
                         target: self,
                         action: #selector(self.contactViewControllerDidCancel)
@@ -632,8 +634,10 @@ public class SwiftFlutterContactsPlugin: NSObject, FlutterPlugin, FlutterStreamH
                     }
                 }
                 let contactView = CNContactViewController(forNewContact: contact)
+                let systemBundle = Bundle(for: UIButton.self)
+                let cancelText = systemBundle.localizedString(forKey: "Cancel", value: nil, table: nil)
                 contactView.navigationItem.backBarButtonItem = UIBarButtonItem(
-                    title: "Cancel",
+                    title: cancelText,
                     style: .plain,
                     target: self,
                     action: #selector(self.contactViewControllerDidCancel)
@@ -657,8 +661,11 @@ public class SwiftFlutterContactsPlugin: NSObject, FlutterPlugin, FlutterStreamH
 
                 let navigationController = UINavigationController(rootViewController: contactView)
 
+                let systemBundle = Bundle(for: UIButton.self)
+                let backText = systemBundle.localizedString(forKey: "Back", value: nil, table: nil)
+
                 var button: UIButton = UIButton(type: .system)
-                button.setTitle("Cancel", for: .normal)
+                button.setTitle(backText, for: .normal)
                 button.setTitleColor(.white, for: .normal)
                 button.addTarget(self, action: #selector(self.contactViewControllerDidCancel), for: .touchUpInside)
                 contactView.navigationController?.navigationBar.topItem?.setLeftBarButton(UIBarButtonItem(customView: button), animated: true)
