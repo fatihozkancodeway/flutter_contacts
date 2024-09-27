@@ -75,10 +75,10 @@ public enum FlutterContacts {
             print("Unexpected error: \(error)")
             return []
         }
-
+        
         return contacts
     }
-
+    
     static func select(
         id: String?,
         withProperties: Bool,
@@ -120,7 +120,7 @@ public enum FlutterContacts {
         }
         return contacts.map { $0.toMap() }
     }
-
+    
     static func fetchGroups(_ store: CNContactStore) -> [CNGroup] {
         var groups: [CNGroup] = []
         do {
@@ -131,7 +131,7 @@ public enum FlutterContacts {
         }
         return groups
     }
-
+    
     static func fetchGroupMemberships(_ store: CNContactStore, _ groups: [CNGroup], forContactId contactId: String? = nil) -> [String: [Int]] {
         var memberships = [String: [Int]]()
         for (groupIndex, group) in groups.enumerated() {
@@ -153,7 +153,7 @@ public enum FlutterContacts {
         }
         return memberships
     }
-
+    
     static func fetchContainers(_ store: CNContactStore) -> [CNContainer] {
         var containers: [CNContainer] = []
         do {
@@ -164,7 +164,7 @@ public enum FlutterContacts {
         }
         return containers
     }
-
+    
     static func fetchContainerMemberships(_ store: CNContactStore, _ containers: [CNContainer]) -> [String: [Int]] {
         var memberships = [String: [Int]]()
         for (containerIndex, container) in containers.enumerated() {
@@ -184,22 +184,22 @@ public enum FlutterContacts {
         }
         return memberships
     }
-
+    
     // Inserts a new contact into the database.
     static func insert(
         _ args: [String: Any?],
         _ includeNotesOnIos13AndAbove: Bool
     ) throws -> [String: Any?] {
         let contact = CNMutableContact()
-
+        
         addFieldsToContact(args, contact, includeNotesOnIos13AndAbove)
-
+        
         let saveRequest = CNSaveRequest()
         saveRequest.add(contact, toContainerWithIdentifier: nil)
         try CNContactStore().execute(saveRequest)
         return Contact(fromContact: contact).toMap()
     }
-
+    
     // Updates an existing contact in the database.
     static func update(
         _ args: [String: Any?],
@@ -238,7 +238,7 @@ public enum FlutterContacts {
         if #available(iOS 13, *), !includeNotesOnIos13AndAbove {} else {
             keys.append(CNContactNoteKey)
         }
-
+        
         let request = CNContactFetchRequest(keysToFetch: keys as! [CNKeyDescriptor])
         if #available(iOS 10, *) { request.mutableObjects = true }
         request.predicate = CNContact.predicateForContacts(withIdentifiers: [id])
@@ -247,17 +247,17 @@ public enum FlutterContacts {
         try store.enumerateContacts(with: request, usingBlock: { (contact, _) -> Void in
             contacts.append(contact)
         })
-
+        
         // Mutate the contact
         if let firstContact = contacts.first {
             let contact = firstContact.mutableCopy() as! CNMutableContact
             clearFields(contact, includeNotesOnIos13AndAbove)
             addFieldsToContact(args, contact, includeNotesOnIos13AndAbove)
-
+            
             let saveRequest = CNSaveRequest()
             saveRequest.update(contact)
             try store.execute(saveRequest)
-
+            
             // Update group membership
             if withGroups {
                 let groups = fetchGroups(store)
@@ -267,7 +267,7 @@ public enum FlutterContacts {
                     deleteRequest.removeMember(contact, from: groups[groupIndex])
                     try store.execute(deleteRequest)
                 }
-
+                
                 let groupIds = Set((args["groups"] as! [[String: Any]]).map { Group(fromMap: $0).id })
                 for group in groups {
                     if groupIds.contains(group.identifier) {
@@ -277,19 +277,21 @@ public enum FlutterContacts {
                     }
                 }
             }
-
+            
             return Contact(fromContact: contact).toMap()
         } else {
             return nil
         }
     }
-
+    
+    
     // Delete contact
     static func delete(_ ids: [String]) throws {
         let request = CNContactFetchRequest(keysToFetch: [])
         if #available(iOS 10, *) {
             request.mutableObjects = true
         }
+        
         request.predicate = CNContact.predicateForContacts(withIdentifiers: ids)
         let store = CNContactStore()
         var contacts: [CNContact] = []
@@ -302,66 +304,66 @@ public enum FlutterContacts {
         }
         try store.execute(saveRequest)
     }
-
+    
     static func getGroups() -> [[String: Any]] {
         let store = CNContactStore()
         let groups = fetchGroups(store)
         return groups.map { Group(fromGroup: $0).toMap() }
     }
-
+    
     static func insertGroup(_ args: [String: Any]) throws -> [String: Any] {
         let group = Group(fromMap: args)
         let newGroup = CNMutableGroup()
         newGroup.name = group.name
-
+        
         let saveRequest = CNSaveRequest()
         saveRequest.add(newGroup, toContainerWithIdentifier: nil)
         try CNContactStore().execute(saveRequest)
-
+        
         return Group(fromGroup: newGroup).toMap()
     }
-
+    
     static func updateGroup(_ args: [String: Any]) throws -> [String: Any] {
         let group = Group(fromMap: args)
-
+        
         let store = CNContactStore()
         let groups = fetchGroups(store)
-
+        
         for g in groups {
             if g.identifier == group.id {
                 let updatedGroup = g.mutableCopy() as! CNMutableGroup
                 updatedGroup.name = group.name
-
+                
                 let saveRequest = CNSaveRequest()
                 saveRequest.update(updatedGroup)
                 try CNContactStore().execute(saveRequest)
-
+                
                 return Group(fromGroup: updatedGroup).toMap()
             }
         }
-
+        
         return args
     }
-
+    
     static func deleteGroup(_ args: [String: Any]) throws {
         let group = Group(fromMap: args)
-
+        
         let store = CNContactStore()
         let groups = fetchGroups(store)
-
+        
         for g in groups {
             if g.identifier == group.id {
                 let deletedGroup = g.mutableCopy() as! CNMutableGroup
-
+                
                 let saveRequest = CNSaveRequest()
                 saveRequest.delete(deletedGroup)
                 try CNContactStore().execute(saveRequest)
-
+                
                 return
             }
         }
     }
-
+    
     private static func clearFields(
         _ contact: CNMutableContact,
         _ includeNotesOnIos13AndAbove: Bool
@@ -379,7 +381,7 @@ public enum FlutterContacts {
             contact.note = ""
         }
     }
-
+    
     static func addFieldsToContact(
         _ args: [String: Any?],
         _ contact: CNMutableContact,
@@ -422,7 +424,7 @@ public enum FlutterContacts {
 public class SwiftFlutterContactsPlugin: NSObject, FlutterPlugin, FlutterStreamHandler, CNContactViewControllerDelegate, CNContactPickerDelegate {
     private let rootViewController: UIViewController
     private var externalResult: FlutterResult?
-
+    
     public static func register(with registrar: FlutterPluginRegistrar) {
         let channel = FlutterMethodChannel(
             name: "github.com/QuisApp/flutter_contacts",
@@ -437,11 +439,11 @@ public class SwiftFlutterContactsPlugin: NSObject, FlutterPlugin, FlutterStreamH
         registrar.addMethodCallDelegate(instance, channel: channel)
         eventChannel.setStreamHandler(instance)
     }
-
+    
     init(_ rootViewController: UIViewController) {
         self.rootViewController = rootViewController
     }
-
+    
     public func handle(_ call: FlutterMethodCall, result: @escaping FlutterResult) {
         switch call.method {
         case "requestPermission":
@@ -642,11 +644,33 @@ public class SwiftFlutterContactsPlugin: NSObject, FlutterPlugin, FlutterStreamH
                 self.rootViewController.present(navigationController, animated: true, completion: nil)
                 self.externalResult = result
             }
+        case "openExternalPreview":
+            DispatchQueue.main.async {
+                let args = call.arguments as! [Any?]
+                let contactData = args[0] as! Dictionary<String, Any>
+                let contact = CNMutableContact()
+                FlutterContacts.addFieldsToContact(contactData, contact, false)
+
+                let contactView = CNContactViewController(for: contact)
+                contactView.delegate = self
+                contactView.allowsEditing = false
+
+                let navigationController = UINavigationController(rootViewController: contactView)
+
+                var button: UIButton = UIButton(type: .system)
+                button.setTitle("Cancel", for: .normal)
+                button.setTitleColor(.white, for: .normal)
+                button.addTarget(self, action: #selector(self.contactViewControllerDidCancel), for: .touchUpInside)
+                contactView.navigationController?.navigationBar.topItem?.setLeftBarButton(UIBarButtonItem(customView: button), animated: true)
+                
+                self.rootViewController.present(navigationController, animated: true, completion: nil)
+                self.externalResult = result
+            }
         default:
             result(FlutterMethodNotImplemented)
         }
     }
-
+    
     public func onListen(
         withArguments _: Any?,
         eventSink events: @escaping FlutterEventSink
@@ -659,12 +683,12 @@ public class SwiftFlutterContactsPlugin: NSObject, FlutterPlugin, FlutterStreamH
         )
         return nil
     }
-
+    
     public func onCancel(withArguments _: Any?) -> FlutterError? {
         NotificationCenter.default.removeObserver(self)
         return nil
     }
-
+    
     public func contactViewController(_ viewController: CNContactViewController, didCompleteWith contact: CNContact?) {
         if let result = externalResult {
             result(contact?.identifier)
@@ -672,7 +696,7 @@ public class SwiftFlutterContactsPlugin: NSObject, FlutterPlugin, FlutterStreamH
         }
         viewController.dismiss(animated: true, completion: nil)
     }
-
+    
     @objc func contactViewControllerDidCancel() {
         if let result = externalResult {
             let viewController: UIViewController? = UIApplication.shared.delegate?.window??.rootViewController
@@ -681,14 +705,14 @@ public class SwiftFlutterContactsPlugin: NSObject, FlutterPlugin, FlutterStreamH
             externalResult = nil
         }
     }
-
+    
     public func contactPicker(_: CNContactPickerViewController, didSelect contact: CNContact) {
         if let result = externalResult {
             result(contact.identifier)
             externalResult = nil
         }
     }
-
+    
     public func contactPickerDidCancel(_: CNContactPickerViewController) {
         if let result = externalResult {
             result(nil)
