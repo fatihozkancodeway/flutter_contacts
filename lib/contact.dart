@@ -2,8 +2,8 @@ import 'dart:convert';
 import 'dart:typed_data';
 
 import 'package:flutter_contacts/config.dart';
-import 'package:flutter_contacts/vcard.dart';
 import 'package:flutter_contacts/flutter_contacts.dart';
+import 'package:flutter_contacts/vcard.dart';
 
 /// A contact.
 ///
@@ -158,54 +158,49 @@ class Contact {
         accounts = accounts ?? <Account>[],
         groups = groups ?? <Group>[];
 
-  factory Contact.fromJson(Map<String, dynamic> json) => Contact(
-        id: (json['id'] as String?) ?? '',
-        displayName: (json['displayName'] as String?) ?? '',
-        thumbnail: json['thumbnail'] as Uint8List?,
-        photo: json['photo'] as Uint8List?,
-        isStarred: (json['isStarred'] as bool?) ?? false,
-        name: Name.fromJson(Map<String, dynamic>.from(json['name'] ?? {})),
-        phones: ((json['phones'] as List?) ?? [])
-            .map((x) => Phone.fromJson(Map<String, dynamic>.from(x)))
-            .toList(),
-        emails: ((json['emails'] as List?) ?? [])
-            .map((x) => Email.fromJson(Map<String, dynamic>.from(x)))
-            .toList(),
-        addresses: ((json['addresses'] as List?) ?? [])
-            .map((x) => Address.fromJson(Map<String, dynamic>.from(x)))
-            .toList(),
-        organizations: ((json['organizations'] as List?) ?? [])
-            .map((x) => Organization.fromJson(Map<String, dynamic>.from(x)))
-            .toList(),
-        websites: ((json['websites'] as List?) ?? [])
-            .map((x) => Website.fromJson(Map<String, dynamic>.from(x)))
-            .toList(),
-        socialMedias: ((json['socialMedias'] as List?) ?? [])
-            .map((x) => SocialMedia.fromJson(Map<String, dynamic>.from(x)))
-            .toList(),
-        events: ((json['events'] as List?) ?? [])
-            .map((x) => Event.fromJson(Map<String, dynamic>.from(x)))
-            .toList(),
-        notes: ((json['notes'] as List?) ?? [])
-            .map((x) => Note.fromJson(Map<String, dynamic>.from(x)))
-            .toList(),
-        accounts: ((json['accounts'] as List?) ?? [])
-            .map((x) => Account.fromJson(Map<String, dynamic>.from(x)))
-            .toList(),
-        groups: ((json['groups'] as List?) ?? [])
-            .map((x) => Group.fromJson(Map<String, dynamic>.from(x)))
-            .toList(),
-      );
+  factory Contact.fromJson(Map<String, dynamic> json) {
+    return Contact(
+      id: (json['id'] as String?) ?? '',
+      displayName: (json['displayName'] as String?) ?? '',
+      thumbnail: (json['thumbnail'] != null) ? _getImageBinary(json['thumbnail']) : json['thumbnail'] as Uint8List?,
+      photo: (json['photo'] != null) ? _getImageBinary(json['photo']) : json['photo'] as Uint8List?,
+      isStarred: (json['isStarred'] as bool?) ?? false,
+      name: Name.fromJson(Map<String, dynamic>.from(json['name'] ?? {})),
+      phones: ((json['phones'] as List?) ?? []).map((x) => Phone.fromJson(Map<String, dynamic>.from(x))).toList(),
+      emails: ((json['emails'] as List?) ?? []).map((x) => Email.fromJson(Map<String, dynamic>.from(x))).toList(),
+      addresses: ((json['addresses'] as List?) ?? []).map((x) => Address.fromJson(Map<String, dynamic>.from(x))).toList(),
+      organizations: ((json['organizations'] as List?) ?? []).map((x) => Organization.fromJson(Map<String, dynamic>.from(x))).toList(),
+      websites: ((json['websites'] as List?) ?? []).map((x) => Website.fromJson(Map<String, dynamic>.from(x))).toList(),
+      socialMedias: ((json['socialMedias'] as List?) ?? []).map((x) => SocialMedia.fromJson(Map<String, dynamic>.from(x))).toList(),
+      events: ((json['events'] as List?) ?? []).map((x) => Event.fromJson(Map<String, dynamic>.from(x))).toList(),
+      notes: ((json['notes'] as List?) ?? []).map((x) => Note.fromJson(Map<String, dynamic>.from(x))).toList(),
+      accounts: ((json['accounts'] as List?) ?? []).map((x) => Account.fromJson(Map<String, dynamic>.from(x))).toList(),
+      groups: ((json['groups'] as List?) ?? []).map((x) => Group.fromJson(Map<String, dynamic>.from(x))).toList(),
+    );
+  }
+
+  static Uint8List _getImageBinary(List<dynamic> dynamicList) {
+    return Uint8List.fromList(dynamicList.cast<int>().toList());
+  }
 
   Map<String, dynamic> toJson({
+    bool forBackup = false,
     bool withThumbnail = true,
     bool withPhoto = true,
   }) =>
       Map<String, dynamic>.from({
         'id': id,
         'displayName': displayName,
-        'thumbnail': withThumbnail ? thumbnail : null,
-        'photo': withPhoto ? photo : null,
+        'thumbnail': withThumbnail
+            ? forBackup
+                ? thumbnail?.toList()
+                : thumbnail
+            : null,
+        'photo': withPhoto
+            ? forBackup
+                ? photo?.toList()
+                : photo
+            : null,
         'isStarred': isStarred,
         'name': name.toJson(),
         'phones': phones.map((x) => x.toJson()).toList(),
@@ -256,8 +251,7 @@ class Contact {
       _listEqual(o.notes, notes);
 
   @override
-  String toString() =>
-      'Contact(id=$id, displayName=$displayName, thumbnail=$thumbnail, '
+  String toString() => 'Contact(id=$id, displayName=$displayName, thumbnail=$thumbnail, '
       'photo=$photo, isStarred=$isStarred, name=$name, phones=$phones, '
       'emails=$emails, addresses=$addresses, organizations=$organizations, '
       'websites=$websites, socialMedias=$socialMedias, events=$events, '
@@ -267,8 +261,7 @@ class Contact {
   Future<Contact> insert() => FlutterContacts.insertContact(this);
 
   /// Updates the contact in the database.
-  Future<Contact> update({bool withGroups = false}) =>
-      FlutterContacts.updateContact(this, withGroups: withGroups);
+  Future<Contact> update({bool withGroups = false}) => FlutterContacts.updateContact(this, withGroups: withGroups);
 
   /// Deletes the contact from the database.
   Future<void> delete() => FlutterContacts.deleteContact(this);
@@ -319,8 +312,7 @@ class Contact {
     }
     if (withPhoto && photoOrThumbnail != null) {
       final encoding = vCardEncode(base64.encode(photoOrThumbnail!));
-      final prefix =
-          v4 ? 'PHOTO:data:image/jpeg;base64,' : 'PHOTO;ENCODING=b;TYPE=JPEG:';
+      final prefix = v4 ? 'PHOTO:data:image/jpeg;base64,' : 'PHOTO;ENCODING=b;TYPE=JPEG:';
       lines.add(prefix + encoding);
     }
     lines.addAll([
@@ -351,10 +343,7 @@ class Contact {
   /// availalbe, falling back to the raw phone number. For emails we use the
   /// email address. By default we use the property hash code.
   void deduplicateProperties() {
-    phones = _depuplicateProperty(
-        phones,
-        (x) => (x.normalizedNumber.isNotEmpty ? x.normalizedNumber : x.number)
-            .hashCode);
+    phones = _depuplicateProperty(phones, (x) => (x.normalizedNumber.isNotEmpty ? x.normalizedNumber : x.number).hashCode);
     emails = _depuplicateProperty(emails, (x) => x.address.hashCode);
     addresses = _depuplicateProperty(addresses);
     organizations = _depuplicateProperty(organizations);
@@ -364,8 +353,7 @@ class Contact {
     notes = _depuplicateProperty(notes);
   }
 
-  static List<T> _depuplicateProperty<T>(List<T> list,
-      [int Function(T)? hashFn]) {
+  static List<T> _depuplicateProperty<T>(List<T> list, [int Function(T)? hashFn]) {
     hashFn ??= (T x) => x.hashCode;
     var deduplicated = <T>[];
     var seen = Set<int>();
@@ -379,11 +367,8 @@ class Contact {
     return deduplicated;
   }
 
-  int _listHashCode(List<dynamic> elements) => elements.isEmpty
-      ? 0
-      : elements.map((x) => x.hashCode).reduce((x, y) => x ^ y);
+  int _listHashCode(List<dynamic> elements) => elements.isEmpty ? 0 : elements.map((x) => x.hashCode).reduce((x, y) => x ^ y);
 
   bool _listEqual(List<dynamic> aa, List<dynamic> bb) =>
-      aa.length == bb.length &&
-      Iterable.generate(aa.length, (i) => i).every((i) => aa[i] == bb[i]);
+      aa.length == bb.length && Iterable.generate(aa.length, (i) => i).every((i) => aa[i] == bb[i]);
 }
