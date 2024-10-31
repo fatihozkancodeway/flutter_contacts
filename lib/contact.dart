@@ -219,8 +219,8 @@ class Contact {
   int get hashCode =>
       id.hashCode ^
       displayName.hashCode ^
-      thumbnail.hashCode ^
-      photo.hashCode ^
+      // thumbnail.hashCode ^
+      // photo.hashCode ^
       isStarred.hashCode ^
       name.hashCode ^
       _listHashCode(phones) ^
@@ -237,8 +237,8 @@ class Contact {
       o is Contact &&
       o.id == id &&
       o.displayName == displayName &&
-      o.thumbnail == thumbnail &&
-      o.photo == photo &&
+      //  o.thumbnail == thumbnail &&
+      //  o.photo == photo &&
       o.isStarred == isStarred &&
       o.name == name &&
       _listEqual(o.phones, phones) &&
