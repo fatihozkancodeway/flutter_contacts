@@ -116,7 +116,7 @@ class FlutterContacts {
     bool deduplicateProperties = true,
   }) async {
     final contacts = await _select(
-      id: id,
+      ids: [id],
       withProperties: withProperties,
       withThumbnail: withThumbnail,
       withPhoto: withPhoto,
@@ -127,6 +127,27 @@ class FlutterContacts {
     );
     if (contacts.length != 1) return null;
     return contacts.first;
+  }
+
+  static Future<List<Contact>> getContactsByIds(
+    List<String> ids, {
+    bool withProperties = true,
+    bool withThumbnail = true,
+    bool withPhoto = true,
+    bool withGroups = false,
+    bool withAccounts = false,
+    bool deduplicateProperties = true,
+  }) {
+    return _select(
+      ids: ids,
+      withProperties: withProperties,
+      withThumbnail: withThumbnail,
+      withPhoto: withPhoto,
+      withGroups: withGroups,
+      withAccounts: withAccounts,
+      sorted: false,
+      deduplicateProperties: deduplicateProperties,
+    );
   }
 
   /// Inserts a new [contact] in the database and returns it.
@@ -269,12 +290,17 @@ class FlutterContacts {
 
   /// Opens external contact app to view an existing contact.
   static Future<void> openExternalView(String id) async =>
-      await _channel.invokeMethod(Platform.isAndroid ? 'openExternalView' : 'openExternalViewOrEdit', [id]);
+      await _channel.invokeMethod(Platform.isAndroid ? 'openExternalView' : 'openExternalViewOrEdit', [
+        [id]
+      ]);
 
   /// Opens external contact app to edit an existing contact.
   static Future<Contact?> openExternalEdit(String id) async {
     // New ID should be the same as original ID, but just to be safe.
-    final newId = await _channel.invokeMethod(Platform.isAndroid ? 'openExternalEdit' : 'openExternalViewOrEdit', [id]);
+    final newId = await _channel.invokeMethod(
+      Platform.isAndroid ? 'openExternalEdit' : 'openExternalViewOrEdit',
+      [id],
+    );
     return newId == null ? null : getContact(newId);
   }
 
@@ -297,7 +323,7 @@ class FlutterContacts {
   }
 
   static Future<List<Contact>> _select({
-    String? id,
+    List<String>? ids,
     bool withProperties = false,
     bool withThumbnail = false,
     bool withPhoto = false,
@@ -308,7 +334,7 @@ class FlutterContacts {
   }) async {
     // removing the types makes it crash at runtime
     List untypedContacts = await _channel.invokeMethod('select', [
-      id,
+      ids,
       withProperties,
       withThumbnail,
       withPhoto,

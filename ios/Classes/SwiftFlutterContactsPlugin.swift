@@ -8,7 +8,7 @@ public enum FlutterContacts {
     // Fetches contact(s).
     static func selectInternal(
         store: CNContactStore,
-        id: String?,
+        ids: [String]?,
         withProperties: Bool,
         withThumbnail: Bool,
         withPhoto: Bool,
@@ -62,9 +62,9 @@ public enum FlutterContacts {
         let request = CNContactFetchRequest(keysToFetch: keys as! [CNKeyDescriptor])
         request.unifyResults = returnUnifiedContacts
         request.sortOrder = .userDefault
-        if id != nil {
-            // Request for a specific contact.
-            request.predicate = CNContact.predicateForContacts(withIdentifiers: [id!])
+        if ids != nil {
+            // Request for specific contacts.
+            request.predicate = CNContact.predicateForContacts(withIdentifiers: ids!)
         }
         do {
             try store.enumerateContacts(
@@ -81,7 +81,7 @@ public enum FlutterContacts {
     }
     
     static func select(
-        id: String?,
+        ids: [String]?,
         withProperties: Bool,
         withThumbnail: Bool,
         withPhoto: Bool,
@@ -93,7 +93,7 @@ public enum FlutterContacts {
         let store = CNContactStore()
         let contactsInternal = selectInternal(
             store: store,
-            id: id,
+            ids: ids,
             withProperties: withProperties,
             withThumbnail: withThumbnail,
             withPhoto: withPhoto,
@@ -456,7 +456,7 @@ public class SwiftFlutterContactsPlugin: NSObject, FlutterPlugin, FlutterStreamH
         case "select":
             DispatchQueue.global(qos: .userInteractive).async {
                 let args = call.arguments as! [Any?]
-                let id = args[0] as? String
+                let ids = args[0] as? [String]
                 let withProperties = args[1] as! Bool
                 let withThumbnail = args[2] as! Bool
                 let withPhoto = args[3] as! Bool
@@ -466,7 +466,7 @@ public class SwiftFlutterContactsPlugin: NSObject, FlutterPlugin, FlutterStreamH
                 // args[7] = includeNonVisibleOnAndroid
                 let includeNotesOnIos13AndAbove = args[8] as! Bool
                 let contacts = FlutterContacts.select(
-                    id: id,
+                    ids: ids,
                     withProperties: withProperties,
                     withThumbnail: withThumbnail,
                     withPhoto: withPhoto,
@@ -588,10 +588,10 @@ public class SwiftFlutterContactsPlugin: NSObject, FlutterPlugin, FlutterStreamH
         case "openExternalViewOrEdit":
             DispatchQueue.main.async {
                 let args = call.arguments as! [Any?]
-                let id = args[0] as! String
+                let ids = args[0] as! [String]
                 let contacts = FlutterContacts.selectInternal(
                     store: CNContactStore(),
-                    id: id,
+                    ids: ids,
                     withProperties: true,
                     withThumbnail: true,
                     withPhoto: true,
