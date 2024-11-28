@@ -19,6 +19,8 @@ public enum FlutterContacts {
         var contacts: [CNContact] = []
         var keys: [Any] = [
             CNContactFormatter.descriptorForRequiredKeys(for: .fullName),
+            CNContactPhoneNumbersKey,
+            CNContactEmailAddressesKey,
             CNContactIdentifierKey,
         ]
         if withProperties {
@@ -32,8 +34,6 @@ public enum FlutterContacts {
                 CNContactPhoneticGivenNameKey,
                 CNContactPhoneticFamilyNameKey,
                 CNContactPhoneticMiddleNameKey,
-                CNContactPhoneNumbersKey,
-                CNContactEmailAddressesKey,
                 CNContactPostalAddressesKey,
                 CNContactOrganizationNameKey,
                 CNContactJobTitleKey,
@@ -61,6 +61,7 @@ public enum FlutterContacts {
 
         let request = CNContactFetchRequest(keysToFetch: keys as! [CNKeyDescriptor])
         request.unifyResults = returnUnifiedContacts
+        request.sortOrder = .userDefault
         if id != nil {
             // Request for a specific contact.
             request.predicate = CNContact.predicateForContacts(withIdentifiers: [id!])

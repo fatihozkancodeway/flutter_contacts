@@ -307,7 +307,6 @@ class FlutterContacts {
     bool deduplicateProperties = true,
   }) async {
     // removing the types makes it crash at runtime
-    // ignore: omit_local_variable_types
     List untypedContacts = await _channel.invokeMethod('select', [
       id,
       withProperties,
@@ -321,18 +320,9 @@ class FlutterContacts {
     ]);
     // ignore: omit_local_variable_types
     List<Contact> contacts = untypedContacts.map((x) => Contact.fromJson(Map<String, dynamic>.from(x))).toList();
-    if (sorted) {
-      contacts.sort(_compareDisplayNames);
-    }
-    if (deduplicateProperties) {
-      contacts.forEach((c) => c.deduplicateProperties());
-    }
-    contacts.forEach((c) => c
-      ..propertiesFetched = withProperties
-      ..thumbnailFetched = withThumbnail
-      ..photoFetched = withPhoto
-      ..isUnified = config.returnUnifiedContacts);
-    return contacts;
+    if (sorted) contacts.sort(_compareDisplayNames);
+    if (deduplicateProperties) contacts.forEach((c) => c.deduplicateProperties());
+    return contacts.toList();
   }
 
   /// Sorts display names in a "natural" way, ignoring case and diacritics.
@@ -358,4 +348,8 @@ class FlutterContacts {
 
   /// Returns normalized display name, which ignores case, space and diacritics.
   static String _normalizeName(String name) => removeDiacritics(name.trim().toLowerCase());
+}
+
+FutureOr<List<Contact>> t(List<dynamic> _) {
+  return (_).map((x) => Contact.fromJson((Map<String, dynamic>.from(x)))).toList();
 }

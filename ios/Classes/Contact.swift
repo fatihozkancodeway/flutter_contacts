@@ -47,14 +47,14 @@ struct Contact {
             from: c,
             style: CNContactFormatterStyle.fullName
         ) ?? ""
-
+        phones = c.phoneNumbers.map { Phone(fromPhone: $0) }
+        emails = c.emailAddresses.map { Email(fromEmail: $0) }
+        
         // Hack/shortcut: if this key is available, all others are too. (We could have
         // CNContactGivenNameKey instead but it seems to be included by default along
         // with some others, so we're going with a more exotic one here.)
         if c.isKeyAvailable(CNContactPhoneticGivenNameKey) {
             name = Name(fromContact: c)
-            phones = c.phoneNumbers.map { Phone(fromPhone: $0) }
-            emails = c.emailAddresses.map { Email(fromEmail: $0) }
             addresses = c.postalAddresses.map { Address(fromAddress: $0) }
             if !c.organizationName.isEmpty
                 || !c.jobTitle.isEmpty

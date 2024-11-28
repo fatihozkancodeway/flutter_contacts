@@ -159,23 +159,34 @@ class Contact {
         groups = groups ?? <Group>[];
 
   factory Contact.fromJson(Map<String, dynamic> json) {
+    final hasProperties = json['name'] != null;
     return Contact(
       id: (json['id'] as String?) ?? '',
       displayName: (json['displayName'] as String?) ?? '',
-      thumbnail: (json['thumbnail'] != null) ? _getImageBinary(json['thumbnail']) : json['thumbnail'] as Uint8List?,
-      photo: (json['photo'] != null) ? _getImageBinary(json['photo']) : json['photo'] as Uint8List?,
-      isStarred: (json['isStarred'] as bool?) ?? false,
-      name: Name.fromJson(Map<String, dynamic>.from(json['name'] ?? {})),
       phones: ((json['phones'] as List?) ?? []).map((x) => Phone.fromJson(Map<String, dynamic>.from(x))).toList(),
       emails: ((json['emails'] as List?) ?? []).map((x) => Email.fromJson(Map<String, dynamic>.from(x))).toList(),
-      addresses: ((json['addresses'] as List?) ?? []).map((x) => Address.fromJson(Map<String, dynamic>.from(x))).toList(),
-      organizations: ((json['organizations'] as List?) ?? []).map((x) => Organization.fromJson(Map<String, dynamic>.from(x))).toList(),
-      websites: ((json['websites'] as List?) ?? []).map((x) => Website.fromJson(Map<String, dynamic>.from(x))).toList(),
-      socialMedias: ((json['socialMedias'] as List?) ?? []).map((x) => SocialMedia.fromJson(Map<String, dynamic>.from(x))).toList(),
-      events: ((json['events'] as List?) ?? []).map((x) => Event.fromJson(Map<String, dynamic>.from(x))).toList(),
-      notes: ((json['notes'] as List?) ?? []).map((x) => Note.fromJson(Map<String, dynamic>.from(x))).toList(),
-      accounts: ((json['accounts'] as List?) ?? []).map((x) => Account.fromJson(Map<String, dynamic>.from(x))).toList(),
-      groups: ((json['groups'] as List?) ?? []).map((x) => Group.fromJson(Map<String, dynamic>.from(x))).toList(),
+      thumbnail: hasProperties
+          ? null
+          : (json['thumbnail'] != null)
+              ? _getImageBinary(json['thumbnail'])
+              : json['thumbnail'] as Uint8List?,
+      photo: hasProperties
+          ? null
+          : (json['photo'] != null)
+              ? _getImageBinary(json['photo'])
+              : json['photo'] as Uint8List?,
+      isStarred: hasProperties ? false : (json['isStarred'] as bool?) ?? false,
+      name: hasProperties ? null : Name.fromJson(Map<String, dynamic>.from(json['name'] ?? {})),
+      addresses: hasProperties ? [] : ((json['addresses'] as List?) ?? []).map((x) => Address.fromJson(Map<String, dynamic>.from(x))).toList(),
+      organizations:
+          hasProperties ? [] : ((json['organizations'] as List?) ?? []).map((x) => Organization.fromJson(Map<String, dynamic>.from(x))).toList(),
+      websites: hasProperties ? [] : ((json['websites'] as List?) ?? []).map((x) => Website.fromJson(Map<String, dynamic>.from(x))).toList(),
+      socialMedias:
+          hasProperties ? [] : ((json['socialMedias'] as List?) ?? []).map((x) => SocialMedia.fromJson(Map<String, dynamic>.from(x))).toList(),
+      events: hasProperties ? [] : ((json['events'] as List?) ?? []).map((x) => Event.fromJson(Map<String, dynamic>.from(x))).toList(),
+      notes: hasProperties ? [] : ((json['notes'] as List?) ?? []).map((x) => Note.fromJson(Map<String, dynamic>.from(x))).toList(),
+      accounts: hasProperties ? [] : ((json['accounts'] as List?) ?? []).map((x) => Account.fromJson(Map<String, dynamic>.from(x))).toList(),
+      groups: hasProperties ? [] : ((json['groups'] as List?) ?? []).map((x) => Group.fromJson(Map<String, dynamic>.from(x))).toList(),
     );
   }
 
@@ -216,39 +227,10 @@ class Contact {
       });
 
   @override
-  int get hashCode =>
-      id.hashCode ^
-      displayName.hashCode ^
-      // thumbnail.hashCode ^
-      // photo.hashCode ^
-      isStarred.hashCode ^
-      name.hashCode ^
-      _listHashCode(phones) ^
-      _listHashCode(emails) ^
-      _listHashCode(addresses) ^
-      _listHashCode(organizations) ^
-      _listHashCode(websites) ^
-      _listHashCode(socialMedias) ^
-      _listHashCode(events) ^
-      _listHashCode(notes);
+  int get hashCode => id.hashCode;
 
   @override
-  bool operator ==(Object o) =>
-      o is Contact &&
-      o.id == id &&
-      o.displayName == displayName &&
-      //  o.thumbnail == thumbnail &&
-      //  o.photo == photo &&
-      o.isStarred == isStarred &&
-      o.name == name &&
-      _listEqual(o.phones, phones) &&
-      _listEqual(o.emails, emails) &&
-      _listEqual(o.addresses, addresses) &&
-      _listEqual(o.organizations, organizations) &&
-      _listEqual(o.websites, websites) &&
-      _listEqual(o.socialMedias, socialMedias) &&
-      _listEqual(o.events, events) &&
-      _listEqual(o.notes, notes);
+  bool operator ==(Object o) => o is Contact && o.id == id;
 
   @override
   String toString() => 'Contact(id=$id, displayName=$displayName, thumbnail=$thumbnail, '
@@ -367,8 +349,8 @@ class Contact {
     return deduplicated;
   }
 
-  int _listHashCode(List<dynamic> elements) => elements.isEmpty ? 0 : elements.map((x) => x.hashCode).reduce((x, y) => x ^ y);
-
-  bool _listEqual(List<dynamic> aa, List<dynamic> bb) =>
-      aa.length == bb.length && Iterable.generate(aa.length, (i) => i).every((i) => aa[i] == bb[i]);
+//   int _listHashCode(List<dynamic> elements) => elements.isEmpty ? 0 : elements.map((x) => x.hashCode).reduce((x, y) => x ^ y);
+//
+//   bool _listEqual(List<dynamic> aa, List<dynamic> bb) =>
+//       aa.length == bb.length && Iterable.generate(aa.length, (i) => i).every((i) => aa[i] == bb[i]);
 }
