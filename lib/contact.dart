@@ -159,34 +159,33 @@ class Contact {
         groups = groups ?? <Group>[];
 
   factory Contact.fromJson(Map<String, dynamic> json) {
-    final hasProperties = json['name'] != null;
+    final isSummary = !(json.containsKey('name') && json['name'].containsKey('firstPhonetic'));
     return Contact(
       id: (json['id'] as String?) ?? '',
       displayName: (json['displayName'] as String?) ?? '',
       phones: ((json['phones'] as List?) ?? []).map((x) => Phone.fromJson(Map<String, dynamic>.from(x))).toList(),
       emails: ((json['emails'] as List?) ?? []).map((x) => Email.fromJson(Map<String, dynamic>.from(x))).toList(),
-      thumbnail: hasProperties
+      thumbnail: isSummary
           ? null
           : (json['thumbnail'] != null)
               ? _getImageBinary(json['thumbnail'])
               : json['thumbnail'] as Uint8List?,
-      photo: hasProperties
+      photo: isSummary
           ? null
           : (json['photo'] != null)
               ? _getImageBinary(json['photo'])
               : json['photo'] as Uint8List?,
-      isStarred: hasProperties ? false : (json['isStarred'] as bool?) ?? false,
-      name: hasProperties ? null : Name.fromJson(Map<String, dynamic>.from(json['name'] ?? {})),
-      addresses: hasProperties ? [] : ((json['addresses'] as List?) ?? []).map((x) => Address.fromJson(Map<String, dynamic>.from(x))).toList(),
+      isStarred: isSummary ? false : (json['isStarred'] as bool?) ?? false,
+      name: isSummary ? null : Name.fromJson(Map<String, dynamic>.from(json['name'] ?? {})),
+      addresses: isSummary ? [] : ((json['addresses'] as List?) ?? []).map((x) => Address.fromJson(Map<String, dynamic>.from(x))).toList(),
       organizations:
-          hasProperties ? [] : ((json['organizations'] as List?) ?? []).map((x) => Organization.fromJson(Map<String, dynamic>.from(x))).toList(),
-      websites: hasProperties ? [] : ((json['websites'] as List?) ?? []).map((x) => Website.fromJson(Map<String, dynamic>.from(x))).toList(),
-      socialMedias:
-          hasProperties ? [] : ((json['socialMedias'] as List?) ?? []).map((x) => SocialMedia.fromJson(Map<String, dynamic>.from(x))).toList(),
-      events: hasProperties ? [] : ((json['events'] as List?) ?? []).map((x) => Event.fromJson(Map<String, dynamic>.from(x))).toList(),
-      notes: hasProperties ? [] : ((json['notes'] as List?) ?? []).map((x) => Note.fromJson(Map<String, dynamic>.from(x))).toList(),
-      accounts: hasProperties ? [] : ((json['accounts'] as List?) ?? []).map((x) => Account.fromJson(Map<String, dynamic>.from(x))).toList(),
-      groups: hasProperties ? [] : ((json['groups'] as List?) ?? []).map((x) => Group.fromJson(Map<String, dynamic>.from(x))).toList(),
+          isSummary ? [] : ((json['organizations'] as List?) ?? []).map((x) => Organization.fromJson(Map<String, dynamic>.from(x))).toList(),
+      websites: isSummary ? [] : ((json['websites'] as List?) ?? []).map((x) => Website.fromJson(Map<String, dynamic>.from(x))).toList(),
+      socialMedias: isSummary ? [] : ((json['socialMedias'] as List?) ?? []).map((x) => SocialMedia.fromJson(Map<String, dynamic>.from(x))).toList(),
+      events: isSummary ? [] : ((json['events'] as List?) ?? []).map((x) => Event.fromJson(Map<String, dynamic>.from(x))).toList(),
+      notes: isSummary ? [] : ((json['notes'] as List?) ?? []).map((x) => Note.fromJson(Map<String, dynamic>.from(x))).toList(),
+      accounts: isSummary ? [] : ((json['accounts'] as List?) ?? []).map((x) => Account.fromJson(Map<String, dynamic>.from(x))).toList(),
+      groups: isSummary ? [] : ((json['groups'] as List?) ?? []).map((x) => Group.fromJson(Map<String, dynamic>.from(x))).toList(),
     );
   }
 
